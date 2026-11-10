@@ -5,3 +5,5 @@ node_modules/
 coverage/
 public/uploads/
 .DS_Store
+backups/*
+!backups/.gitkeep
