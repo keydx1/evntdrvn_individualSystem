@@ -1,0 +1,39 @@
+{
+  "name": "aquapiol",
+  "version": "1.0.0",
+  "description": "AquaPiol Water Refilling Station Inventory Management System — XianFire Framework",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "xian": "./bin/xian.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "xian": "nodemon index.js",
+    "migrate": "node migrate.js",
+    "seed": "node seed.js",
+    "setup": "node migrate.js && node seed.js",
+    "migrate:sql": "node scripts/migrate-sql.js",
+    "backup": "bash scripts/backup.sh",
+    "employee:map": "node scripts/map-employee.js",
+    "create:model": "node create.js model",
+    "create:controller": "node create.js controller",
+    "create:add-middleware": "node create.js middleware",
+    "create:upload-middleware": "node create.js upload-middleware",
+    "route:list": "node list-routes.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "connect-flash": "^0.1.1",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "hbs": "^4.2.0",
+    "mysql2": "^3.11.0",
+    "sequelize": "^6.37.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

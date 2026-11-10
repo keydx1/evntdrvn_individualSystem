@@ -1,0 +1,142 @@
+{{> shell-start}}
+
+<section class="page-intro">
+  <div>
+    <span class="eyebrow">Audit trail</span>
+    <h2>Inventory history</h2>
+    <p>Every delivery, release and correction is recorded with the user, balance and reference.</p>
+  </div>
+  <div class="header-actions">
+    <a href="/stock/in" class="btn btn-secondary">
+      <svg class="icon" aria-hidden="true"><use href="#i-arrow-down"></use></svg>
+      Stock in
+    </a>
+    <a href="/stock/out" class="btn btn-secondary">
+      <svg class="icon" aria-hidden="true"><use href="#i-arrow-up"></use></svg>
+      Stock out
+    </a>
+    <a href="/stock/adjust" class="btn btn-primary">
+      <svg class="icon" aria-hidden="true"><use href="#i-swap"></use></svg>
+      Adjust
+    </a>
+  </div>
+</section>
+
+<section class="summary-strip">
+  <article class="summary-card">
+    <span class="summary-icon success"><svg class="icon" aria-hidden="true"><use href="#i-arrow-down"></use></svg></span>
+    <div><span>Stock received</span><strong>+{{ number summary.in }}</strong></div>
+  </article>
+  <article class="summary-card">
+    <span class="summary-icon danger"><svg class="icon" aria-hidden="true"><use href="#i-arrow-up"></use></svg></span>
+    <div><span>Stock released</span><strong>{{ number summary.out }}</strong></div>
+  </article>
+  <article class="summary-card">
+    <span class="summary-icon info"><svg class="icon" aria-hidden="true"><use href="#i-swap"></use></svg></span>
+    <div><span>Net adjustments</span><strong>{{ signed summary.adjustment }}</strong></div>
+  </article>
+  <article class="summary-card">
+    <span class="summary-icon blue"><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg></span>
+    <div><span>Matching movements</span><strong>{{ number resultCount }}</strong></div>
+  </article>
+</section>
+
+<form class="filter-bar" method="GET" action="/stock">
+  <div class="field">
+    <label for="productId">Product</label>
+    <select id="productId" name="productId">
+      <option value="">All products</option>
+      {{#each products}}
+        <option value="{{ id }}" {{selected ../filters.productId id}}>{{ name }} ({{ sku }})</option>
+      {{/each}}
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="type">Movement type</label>
+    <select id="type" name="type">
+      <option value="" {{selected filters.type ""}}>All types</option>
+      <option value="in" {{selected filters.type "in"}}>Stock in</option>
+      <option value="out" {{selected filters.type "out"}}>Stock out</option>
+      <option value="adjustment" {{selected filters.type "adjustment"}}>Adjustment</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="from">From</label>
+    <input type="date" id="from" name="from" value="{{ filters.from }}">
+  </div>
+
+  <div class="field">
+    <label for="to">To</label>
+    <input type="date" id="to" name="to" value="{{ filters.to }}">
+  </div>
+
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="/stock" class="btn btn-ghost">Reset</a>
+</form>
+
+<section class="panel panel-flush">
+  {{#if movements.length}}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Product</th>
+            <th class="text-right">Change</th>
+            <th class="text-right">Balance</th>
+            <th>Reference</th>
+            <th>Recorded by</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each movements}}
+            <tr>
+              <td class="nowrap">
+                <strong class="cell-date">{{ formatDate createdAt }}</strong>
+                <span class="table-subtitle">{{ formatDateTime createdAt }}</span>
+              </td>
+              <td><span class="badge badge-{{ movementClass type }}">{{ movementLabel type }}</span></td>
+              <td>
+                <a class="table-title" href="/products/{{ product.id }}">{{ product.name }}</a>
+                <span class="table-subtitle">{{ product.sku }}</span>
+              </td>
+              <td class="text-right nowrap">
+                <strong class="signed {{ movementClass type }}">{{ signed quantity }}</strong>
+                <span class="unit-label">{{ product.unit }}</span>
+              </td>
+              <td class="text-right nowrap">
+                <span class="muted">{{ number previousStock }}</span>
+                <span class="arrow-sep">→</span>
+                <strong>{{ number newStock }}</strong>
+              </td>
+              <td><code class="small-code">{{#if reference}}{{ reference }}{{else}}—{{/if}}</code></td>
+              <td>
+                {{ user.name }}
+                {{#if supplier}}<span class="table-subtitle">{{ supplier.name }}</span>{{/if}}
+              </td>
+              <td class="notes-cell">{{#if notes}}{{ notes }}{{else}}<span class="muted">—</span>{{/if}}</td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+
+    {{> pagination}}
+  {{else}}
+    <div class="empty-state large">
+      <span class="empty-icon"><svg class="icon" aria-hidden="true"><use href="#i-swap"></use></svg></span>
+      <h4>No inventory history matches this view</h4>
+      <p>Adjust the filters or record a new stock movement.</p>
+      <div class="empty-actions">
+        <a href="/stock" class="btn btn-secondary">Clear filters</a>
+        <a href="/stock/in" class="btn btn-primary">Record stock in</a>
+      </div>
+    </div>
+  {{/if}}
+</section>
+
+{{> shell-end}}

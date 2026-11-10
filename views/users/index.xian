@@ -1,0 +1,86 @@
+{{> shell-start}}
+
+<section class="page-intro">
+  <div>
+    <span class="eyebrow">Access control</span>
+    <h2>User accounts</h2>
+    <p>Administrators manage the system; staff record stock movements and daily inventory work.</p>
+  </div>
+  <a href="/users/new" class="btn btn-primary">
+    <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>
+    Add user
+  </a>
+</section>
+
+<section class="panel panel-flush">
+  <div class="panel-head panel-head-inside">
+    <div>
+      <h3>{{ users.length }} account{{#if (ne users.length 1)}}s{{/if}}</h3>
+      <p class="panel-subtitle">At least one active administrator must always remain.</p>
+    </div>
+  </div>
+
+  {{#if users.length}}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th class="text-right">Movements recorded</th>
+            <th>Joined</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each users}}
+            <tr>
+              <td>
+                <span class="supplier-name">
+                  <span class="avatar avatar-sm">{{ initials name }}</span>
+                  <span>
+                    <strong>{{ name }}{{#if (eq id ../currentUser.id)}} <span class="you-tag">You</span>{{/if}}</strong>
+                    <small>{{ email }}</small>
+                  </span>
+                </span>
+              </td>
+              <td>
+                {{#if (eq role 'admin')}}
+                  <span class="badge badge-info">Administrator</span>
+                {{else}}
+                  <span class="badge badge-muted">Staff</span>
+                {{/if}}
+              </td>
+              <td>
+                {{#if isActive}}
+                  <span class="badge badge-success">Active</span>
+                {{else}}
+                  <span class="badge badge-danger">Inactive</span>
+                {{/if}}
+              </td>
+              <td class="text-right">{{ number movementCount }}</td>
+              <td>{{ formatDate createdAt }}</td>
+              <td>
+                <div class="row-actions">
+                  <a class="icon-btn" href="/users/{{ id }}/edit" title="Edit {{ name }}">
+                    <svg class="icon" aria-hidden="true"><use href="#i-edit"></use></svg>
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  {{else}}
+    <div class="empty-state large">
+      <span class="empty-icon"><svg class="icon" aria-hidden="true"><use href="#i-users"></use></svg></span>
+      <h4>No users found</h4>
+      <p>Create an account to let station staff sign in.</p>
+      <a href="/users/new" class="btn btn-primary">Add user</a>
+    </div>
+  {{/if}}
+</section>
+
+{{> shell-end}}

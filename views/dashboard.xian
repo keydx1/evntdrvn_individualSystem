@@ -1,0 +1,299 @@
+{{> shell-start}}
+
+<section class="welcome-banner">
+  <div class="welcome-copy">
+    <span class="pill">Station pulse</span>
+    <h2>Good to see you, {{ currentUser.name }}.</h2>
+    <p>
+      Here is the current state of AquaPiol inventory. You have
+      <strong>{{ number stats.units }}</strong> units on hand across
+      <strong>{{ stats.products }}</strong> active products.
+    </p>
+  </div>
+  <div class="welcome-actions">
+    {{#if (can "products.manage")}}
+    <a href="/products/new" class="btn btn-secondary">
+      <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>
+      Add product
+    </a>
+    {{/if}}
+    <a href="/stock/in" class="btn btn-primary">
+      <svg class="icon" aria-hidden="true"><use href="#i-arrow-down"></use></svg>
+      Record delivery
+    </a>
+  </div>
+</section>
+
+<section class="stat-grid">
+  <article class="stat-card">
+    <div class="stat-icon blue">
+      <svg class="icon" aria-hidden="true"><use href="#i-box"></use></svg>
+    </div>
+    <div class="stat-copy">
+      <span class="stat-label">Active products</span>
+      <strong class="stat-value">{{ number stats.products }}</strong>
+      <span class="stat-meta">{{ number monthlyMovements }} movements in 30 days</span>
+    </div>
+  </article>
+
+  <article class="stat-card">
+    <div class="stat-icon aqua">
+      <svg class="icon" aria-hidden="true"><use href="#i-swap"></use></svg>
+    </div>
+    <div class="stat-copy">
+      <span class="stat-label">Units on hand</span>
+      <strong class="stat-value">{{ number stats.units }}</strong>
+      <span class="stat-meta">Across all active products</span>
+    </div>
+  </article>
+
+  <article class="stat-card">
+    <div class="stat-icon amber">
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+    </div>
+    <div class="stat-copy">
+      <span class="stat-label">Needs attention</span>
+      <strong class="stat-value">{{ number (add stats.lowStock stats.outOfStock) }}</strong>
+      <span class="stat-meta">{{ stats.lowStock }} low · {{ stats.outOfStock }} out of stock</span>
+    </div>
+  </article>
+
+  <article class="stat-card">
+    <div class="stat-icon green">
+      <svg class="icon" aria-hidden="true"><use href="#i-chart"></use></svg>
+    </div>
+    <div class="stat-copy">
+      <span class="stat-label">Inventory value</span>
+      <strong class="stat-value">{{ money stats.costValue }}</strong>
+      <span class="stat-meta">{{ money stats.retailValue }} at selling price</span>
+    </div>
+  </article>
+</section>
+
+<div class="dashboard-grid">
+  <section class="panel chart-panel">
+    <div class="panel-head">
+      <div>
+        <span class="eyebrow">Activity</span>
+        <h3>Stock movement trend</h3>
+        <p class="panel-subtitle">Units received and released · last 30 days</p>
+      </div>
+      <div class="chart-legend">
+        <span class="legend-chip"><i style="background:#0891b2"></i> In <strong>{{ number trendTotals.in }}</strong></span>
+        <span class="legend-chip"><i style="background:#b45309"></i> Out <strong>{{ number trendTotals.out }}</strong></span>
+      </div>
+    </div>
+
+    <div class="chart-frame">
+      {{#if trend.length}}
+        {{{ trendChart trend }}}
+      {{else}}
+        <div class="empty-state">
+          <h4>No movement yet</h4>
+          <p>Record a delivery or a release to start the trend line.</p>
+        </div>
+      {{/if}}
+    </div>
+  </section>
+
+  <section class="panel chart-panel">
+    <div class="panel-head">
+      <div>
+        <span class="eyebrow">Health</span>
+        <h3>Stock status</h3>
+        <p class="panel-subtitle">{{ number stats.products }} active products</p>
+      </div>
+    </div>
+
+    {{#if stats.products}}
+      <div class="pie-wrap">
+        {{{ pieChart stockHealth }}}
+      </div>
+      <ul class="pie-legend">
+        {{#each stockHealth}}
+          <li>
+            <i style="background:{{ color }}"></i>
+            <span class="pie-label">{{ label }}</span>
+            <strong>{{ value }}</strong>
+            <em>{{ pct }}%</em>
+          </li>
+        {{/each}}
+      </ul>
+    {{else}}
+      <div class="empty-state">
+        <h4>No products yet</h4>
+        <p>Add products to see their stock health.</p>
+      </div>
+    {{/if}}
+  </section>
+</div>
+
+<div class="dashboard-grid">
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <span class="eyebrow">Reorder list</span>
+        <h3>Low stock products</h3>
+      </div>
+      <a href="/alerts" class="text-link">View all alerts</a>
+    </div>
+
+    {{#if lowStock.length}}
+      <div class="table-wrap">
+        <table class="data-table compact">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>On hand</th>
+              <th>Reorder at</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each lowStock}}
+              <tr>
+                <td>
+                  <a class="table-title" href="/products/{{ id }}">{{ name }}</a>
+                  <span class="table-subtitle">{{ sku }}</span>
+                </td>
+                <td class="nowrap"><strong>{{ number quantity }}</strong> {{ unit }}</td>
+                <td class="nowrap">{{ number reorderLevel }}</td>
+                <td>
+                  {{#if (lte quantity 0)}}
+                    <span class="badge badge-danger">Out of stock</span>
+                  {{else}}
+                    <span class="badge badge-warning">Low stock</span>
+                  {{/if}}
+                </td>
+              </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    {{else}}
+      <div class="empty-state">
+        <span class="empty-icon">
+          <svg class="icon" aria-hidden="true"><use href="#i-check-circle"></use></svg>
+        </span>
+        <h4>Stock levels look healthy</h4>
+        <p>No products are at or below their reorder level.</p>
+      </div>
+    {{/if}}
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <span class="eyebrow">Ledger</span>
+        <h3>Recent movements</h3>
+      </div>
+      <a href="/stock" class="text-link">Full history</a>
+    </div>
+
+    {{#if recentMovements.length}}
+      <ul class="activity-list">
+        {{#each recentMovements}}
+          <li class="activity-item">
+            <span class="activity-dot {{ movementClass type }}">
+              {{#if (eq type 'in')}}
+                <svg class="icon" aria-hidden="true"><use href="#i-arrow-down"></use></svg>
+              {{else}}
+                {{#if (eq type 'out')}}
+                  <svg class="icon" aria-hidden="true"><use href="#i-arrow-up"></use></svg>
+                {{else}}
+                  <svg class="icon" aria-hidden="true"><use href="#i-swap"></use></svg>
+                {{/if}}
+              {{/if}}
+            </span>
+            <div class="activity-copy">
+              <div class="activity-title">
+                <a href="/products/{{ product.id }}">{{ product.name }}</a>
+                <span class="signed {{ movementClass type }}">{{ signed quantity }}</span>
+              </div>
+              <p>
+                {{ movementLabel type }} · {{ formatDateTime createdAt }}
+                {{#if user}} · {{ user.name }}{{/if}}
+              </p>
+            </div>
+          </li>
+        {{/each}}
+      </ul>
+    {{else}}
+      <div class="empty-state">
+        <span class="empty-icon">
+          <svg class="icon" aria-hidden="true"><use href="#i-swap"></use></svg>
+        </span>
+        <h4>No movements yet</h4>
+        <p>Record your first stock delivery to start the ledger.</p>
+      </div>
+    {{/if}}
+  </section>
+</div>
+
+<div class="dashboard-grid">
+  <section class="panel chart-panel">
+    <div class="panel-head">
+      <div>
+        <span class="eyebrow">Concentration</span>
+        <h3>Top stocked products</h3>
+        <p class="panel-subtitle">Units on hand · highest six</p>
+      </div>
+      <a href="/products" class="text-link">View all</a>
+    </div>
+
+    {{#if topProducts.length}}
+      <div class="vbars">
+        {{#each topProducts}}
+          <div class="vbar">
+            <span class="vbar-value">{{ number quantity }}</span>
+            <div class="vbar-track">
+              <div class="vbar-fill" style="height: {{ pct }}%"></div>
+            </div>
+            <span class="vbar-label" title="{{ name }}">{{ name }}</span>
+            <span class="vbar-unit">{{ unit }}</span>
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class="empty-state">
+        <h4>No products yet</h4>
+        <p>Add products to compare their stock levels.</p>
+      </div>
+    {{/if}}
+  </section>
+
+  <section class="panel chart-panel">
+    <div class="panel-head">
+      <div>
+        <span class="eyebrow">Distribution</span>
+        <h3>Inventory value by category</h3>
+        <p class="panel-subtitle">Value carried at cost price</p>
+      </div>
+      <a href="/reports" class="text-link">Open reports</a>
+    </div>
+
+    {{#if categoryBars.length}}
+      <div class="hbar-list">
+        {{#each categoryBars}}
+          <div class="hbar-row">
+            <div class="hbar-head">
+              <strong>{{ name }}</strong>
+              <span>{{ money value }}</span>
+            </div>
+            <div class="hbar-track">
+              <div class="hbar-fill" style="width: {{ pct }}%"></div>
+            </div>
+            <div class="hbar-meta">{{ products }} products · {{ number units }} units</div>
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class="empty-state">
+        <h4>No categories in use</h4>
+        <p>Add categories and products to see the distribution.</p>
+      </div>
+    {{/if}}
+  </section>
+</div>
+
+{{> shell-end}}

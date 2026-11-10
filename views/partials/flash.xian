@@ -1,0 +1,19 @@
+{{#if success_msg.length}}
+  <div class="alert alert-success" role="status" data-auto-dismiss>
+    <svg class="icon" aria-hidden="true"><use href="#i-check-circle"></use></svg>
+    <div>
+      {{#each success_msg}}<p>{{ this }}</p>{{/each}}
+    </div>
+    <button type="button" class="alert-close" data-dismiss aria-label="Dismiss">&times;</button>
+  </div>
+{{/if}}
+
+{{#if error_msg.length}}
+  <div class="alert alert-error" role="alert">
+    <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+    <div>
+      {{#each error_msg}}<p>{{ this }}</p>{{/each}}
+    </div>
+    <button type="button" class="alert-close" data-dismiss aria-label="Dismiss">&times;</button>
+  </div>
+{{/if}}

@@ -1,0 +1,147 @@
+{{> shell-start}}
+
+<section class="page-intro">
+  <div>
+    <span class="eyebrow">Station insights</span>
+    <h2>Inventory reports</h2>
+    <p>Valuation and stock levels for the selected period.</p>
+  </div>
+  <div class="header-actions">
+    {{#if (can "reports.export")}}
+    <a href="/reports/export/products?category={{ filters.category }}" class="btn btn-secondary">
+      <svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg>
+      Products CSV
+    </a>
+    <a href="/reports/export/movements?from={{ from }}&to={{ to }}&category={{ filters.category }}" class="btn btn-primary">
+      <svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg>
+      Movements CSV
+    </a>
+    {{/if}}
+  </div>
+</section>
+
+<section class="stat-grid stat-grid-four">
+  <article class="stat-card">
+    <div class="stat-icon blue"><svg class="icon" aria-hidden="true"><use href="#i-chart"></use></svg></div>
+    <div class="stat-copy">
+      <span class="stat-label">Inventory value</span>
+      <strong class="stat-value">{{ money summary.costValue }}</strong>
+      <span class="stat-meta">At cost price</span>
+    </div>
+  </article>
+  <article class="stat-card">
+    <div class="stat-icon aqua"><svg class="icon" aria-hidden="true"><use href="#i-box"></use></svg></div>
+    <div class="stat-copy">
+      <span class="stat-label">Retail value</span>
+      <strong class="stat-value">{{ money summary.retailValue }}</strong>
+      <span class="stat-meta">{{ number summary.units }} units on hand</span>
+    </div>
+  </article>
+  <article class="stat-card">
+    <div class="stat-icon amber"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg></div>
+    <div class="stat-copy">
+      <span class="stat-label">Reorder exposure</span>
+      <strong class="stat-value">{{ number (add summary.lowStock summary.outOfStock) }}</strong>
+      <span class="stat-meta">{{ summary.lowStock }} low · {{ summary.outOfStock }} out</span>
+    </div>
+  </article>
+  <article class="stat-card">
+    <div class="stat-icon green"><svg class="icon" aria-hidden="true"><use href="#i-swap"></use></svg></div>
+    <div class="stat-copy">
+      <span class="stat-label">Period movements</span>
+      <strong class="stat-value">{{ number movementSummary.count }}</strong>
+      <span class="stat-meta">{{ from }} to {{ to }}</span>
+    </div>
+  </article>
+</section>
+
+<div class="preset-bar">
+  <div class="preset-group" role="group" aria-label="Report period">
+    {{#each periods}}
+      <a class="preset {{#if (eq ../period key)}}active{{/if}}" href="/reports?period={{ key }}&category={{ ../filters.category }}">{{ label }}</a>
+    {{/each}}
+    <a class="preset {{#if (eq period 'custom')}}active{{/if}}" href="/reports?period=custom&from={{ from }}&to={{ to }}&category={{ filters.category }}">Custom</a>
+  </div>
+</div>
+
+<form class="filter-bar" method="GET" action="/reports">
+  <input type="hidden" name="period" value="custom">
+  <div class="field">
+    <label for="from">Period start</label>
+    <input type="date" id="from" name="from" value="{{ from }}">
+  </div>
+  <div class="field">
+    <label for="to">Period end</label>
+    <input type="date" id="to" name="to" value="{{ to }}">
+  </div>
+  <div class="field">
+    <label for="category">Category</label>
+    <select id="category" name="category">
+      <option value="">All categories</option>
+      {{#each categories}}
+        <option value="{{ id }}" {{selected ../filters.category id}}>{{ name }}</option>
+      {{/each}}
+    </select>
+  </div>
+  <button type="submit" class="btn btn-secondary">Apply</button>
+  <a href="/reports" class="btn btn-ghost">Reset</a>
+</form>
+
+{{#if filterError}}
+  <div class="alert alert-warning">
+    <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+    <div><p>{{ filterError }}</p></div>
+  </div>
+{{/if}}
+
+<section class="panel panel-flush">
+  <div class="panel-head panel-head-inside">
+    <div>
+      <span class="eyebrow">Valuation</span>
+      <h3>Stock by category</h3>
+    </div>
+  </div>
+
+  {{#if groups.length}}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th class="text-right">Products</th>
+            <th class="text-right">Units</th>
+            <th class="text-right">Cost value</th>
+            <th class="text-right">Retail value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each groups}}
+            <tr>
+              <td><span class="category-name"><span class="category-dot"></span>{{ name }}</span></td>
+              <td class="text-right">{{ number products }}</td>
+              <td class="text-right">{{ number units }}</td>
+              <td class="text-right">{{ money costValue }}</td>
+              <td class="text-right">{{ money retailValue }}</td>
+            </tr>
+          {{/each}}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th>Total</th>
+            <th class="text-right">{{ number summary.products }}</th>
+            <th class="text-right">{{ number summary.units }}</th>
+            <th class="text-right">{{ money summary.costValue }}</th>
+            <th class="text-right">{{ money summary.retailValue }}</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  {{else}}
+    <div class="empty-state">
+      <h4>No products in this category</h4>
+      <p>Adjust the category filter or add products to the catalogue.</p>
+    </div>
+  {{/if}}
+</section>
+
+{{> shell-end}}

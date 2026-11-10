@@ -1,0 +1,81 @@
+{{> shell-start}}
+
+<section class="page-intro">
+  <div>
+    <span class="eyebrow">Catalogue structure</span>
+    <h2>Product categories</h2>
+    <p>Group products so stock reports show where inventory value is concentrated.</p>
+  </div>
+  {{#if (can "categories.manage")}}
+  <a href="/categories/new" class="btn btn-primary">
+    <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>
+    Add category
+  </a>
+  {{/if}}
+</section>
+
+<section class="panel panel-flush">
+  <div class="panel-head panel-head-inside">
+    <div>
+      <h3>{{ categories.length }} categor{{#if (eq categories.length 1)}}y{{else}}ies{{/if}}</h3>
+      <p class="panel-subtitle">A category can only be deleted once no products use it.</p>
+    </div>
+  </div>
+
+  {{#if categories.length}}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Description</th>
+            <th class="text-right">Products</th>
+            <th class="text-right">Units on hand</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each categories}}
+            <tr>
+              <td>
+                <span class="category-name">
+                  <span class="category-dot"></span>
+                  {{ name }}
+                </span>
+              </td>
+              <td class="muted">{{#if description}}{{ description }}{{else}}—{{/if}}</td>
+              <td class="text-right"><strong>{{ number productCount }}</strong></td>
+              <td class="text-right">{{ number totalUnits }}</td>
+              <td>
+                <div class="row-actions">
+                  {{#if (can "categories.manage")}}
+                  <a class="icon-btn" href="/categories/{{ id }}/edit" title="Edit {{ name }}">
+                    <svg class="icon" aria-hidden="true"><use href="#i-edit"></use></svg>
+                  </a>
+                  <form action="/categories/{{ id }}/delete" method="POST" data-confirm="Delete {{ name }}? This cannot be undone.">
+                    <input type="hidden" name="_csrf" value="{{ ../csrfToken }}">
+                    <button type="submit" class="icon-btn danger" title="Delete {{ name }}" {{#if productCount}}disabled{{/if}}>
+                      <svg class="icon" aria-hidden="true"><use href="#i-trash"></use></svg>
+                    </button>
+                  </form>
+                  {{/if}}
+                </div>
+              </td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  {{else}}
+    <div class="empty-state large">
+      <span class="empty-icon"><svg class="icon" aria-hidden="true"><use href="#i-tag"></use></svg></span>
+      <h4>No categories yet</h4>
+      <p>Create your first category before adding products.</p>
+      {{#if (can "categories.manage")}}
+      <a href="/categories/new" class="btn btn-primary">Add category</a>
+      {{/if}}
+    </div>
+  {{/if}}
+</section>
+
+{{> shell-end}}

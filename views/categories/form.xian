@@ -1,0 +1,68 @@
+{{> shell-start}}
+
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <a href="/categories">Categories</a>
+  <span class="crumb-sep">/</span>
+  <span>{{#if isEdit}}Edit category{{else}}New category{{/if}}</span>
+</nav>
+
+<section class="page-intro compact">
+  <div>
+    <span class="eyebrow">Catalogue structure</span>
+    <h2>{{#if isEdit}}{{ category.name }}{{else}}Add a category{{/if}}</h2>
+    <p>Keep category names short and specific so reports stay easy to scan.</p>
+  </div>
+</section>
+
+<form class="form-card narrow" method="POST" action="{{#if isEdit}}/categories/{{ category.id }}{{else}}/categories{{/if}}">
+  {{> csrf}}
+  {{> form-errors}}
+
+  <section class="form-section">
+    <div class="form-section-head">
+      <span class="section-number">01</span>
+      <div>
+        <h3>Category details</h3>
+        <p>Used in the product form and inventory reports.</p>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="name">Category name <span class="required">*</span></label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          value="{{ values.name }}"
+          maxlength="100"
+          placeholder="e.g. Water Treatment"
+          required
+          autofocus
+        >
+        <span class="hint">Must be unique.</span>
+      </div>
+
+      <div class="field">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          name="description"
+          rows="3"
+          maxlength="255"
+          placeholder="What belongs in this category?"
+        >{{ values.description }}</textarea>
+      </div>
+    </div>
+  </section>
+
+  <div class="form-actions">
+    <a href="/categories" class="btn btn-ghost">Cancel</a>
+    <button type="submit" class="btn btn-primary">
+      <svg class="icon" aria-hidden="true"><use href="#i-check-circle"></use></svg>
+      {{#if isEdit}}Save category{{else}}Create category{{/if}}
+    </button>
+  </div>
+</form>
+
+{{> shell-end}}

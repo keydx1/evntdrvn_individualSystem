@@ -1,0 +1,31 @@
+<header class="topbar">
+  <button type="button" class="icon-btn menu-btn" data-sidebar-toggle aria-label="Open navigation">
+    <svg class="icon" aria-hidden="true"><use href="#i-menu"></use></svg>
+  </button>
+
+  <div class="page-heading">
+    <span class="eyebrow">{{ section }}</span>
+    <h1>{{ title }}</h1>
+  </div>
+
+  <div class="topbar-actions">
+    <a href="/alerts" class="icon-btn topbar-alert" title="Low stock alerts" aria-label="Low stock alerts">
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+      {{#if (gt alertCount 0)}}<span class="alert-count">{{ alertCount }}</span>{{/if}}
+    </a>
+    <span class="date-chip">
+      <svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg>
+      {{ formatDate now }}
+    </span>
+    {{#if (can "stock.record")}}
+    <a href="/stock/in" class="btn btn-secondary btn-sm">
+      <svg class="icon" aria-hidden="true"><use href="#i-arrow-down"></use></svg>
+      Stock in
+    </a>
+    <a href="/stock/out" class="btn btn-primary btn-sm">
+      <svg class="icon" aria-hidden="true"><use href="#i-arrow-up"></use></svg>
+      Stock out
+    </a>
+    {{/if}}
+  </div>
+</header>

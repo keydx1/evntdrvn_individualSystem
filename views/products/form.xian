@@ -1,0 +1,235 @@
+{{> shell-start}}
+
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <a href="/products">Products</a>
+  <span class="crumb-sep">/</span>
+  <span>{{#if isEdit}}Edit product{{else}}New product{{/if}}</span>
+</nav>
+
+<section class="page-intro compact">
+  <div>
+    <span class="eyebrow">Product record</span>
+    <h2>{{#if isEdit}}{{ product.name }}{{else}}Add an inventory item{{/if}}</h2>
+    <p>
+      {{#if isEdit}}
+        Update the catalogue details. Stock balances are changed only through stock movements.
+      {{else}}
+        Create the product record, set its reorder point and optionally load an opening balance.
+      {{/if}}
+    </p>
+  </div>
+</section>
+
+<form class="form-card" method="POST" action="{{#if isEdit}}/products/{{ product.id }}{{else}}/products{{/if}}">
+  {{> csrf}}
+  {{> form-errors}}
+
+  <section class="form-section">
+    <div class="form-section-head">
+      <span class="section-number">01</span>
+      <div>
+        <h3>Product details</h3>
+        <p>How the item is identified in the station catalogue.</p>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="sku">SKU / product code <span class="required">*</span></label>
+        <input
+          type="text"
+          id="sku"
+          name="sku"
+          value="{{ values.sku }}"
+          maxlength="50"
+          placeholder="e.g. BTL-5G-SLIM"
+          required
+        >
+        <span class="hint">Saved in uppercase. Must be unique.</span>
+      </div>
+
+      <div class="field">
+        <label for="name">Product name <span class="required">*</span></label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          value="{{ values.name }}"
+          maxlength="150"
+          placeholder="e.g. 5-Gallon Slim Bottle"
+          required
+        >
+      </div>
+
+      <div class="field">
+        <label for="categoryId">Category <span class="required">*</span></label>
+        <select id="categoryId" name="categoryId" required>
+          <option value="">Select a category</option>
+          {{#each categories}}
+            <option value="{{ id }}" {{selected ../values.categoryId id}}>{{ name }}</option>
+          {{/each}}
+        </select>
+        {{#unless categories.length}}
+          <span class="hint">No categories yet. <a href="/categories/new">Create one first</a>.</span>
+        {{/unless}}
+      </div>
+
+      <div class="field">
+        <label for="supplierId">Preferred supplier</label>
+        <select id="supplierId" name="supplierId">
+          <option value="">No preferred supplier</option>
+          {{#each suppliers}}
+            <option value="{{ id }}" {{selected ../values.supplierId id}}>{{ name }}</option>
+          {{/each}}
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="unit">Unit of measure <span class="required">*</span></label>
+        <select id="unit" name="unit" required>
+          {{#each units}}
+            <option value="{{ this }}" {{selected ../values.unit this}}>{{ this }}</option>
+          {{/each}}
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="location">Storage location</label>
+        <input
+          type="text"
+          id="location"
+          name="location"
+          value="{{ values.location }}"
+          maxlength="100"
+          placeholder="e.g. Bottle rack A"
+        >
+      </div>
+
+      <div class="field field-full">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          name="description"
+          rows="3"
+          maxlength="1000"
+          placeholder="Optional notes about the item, supplier specification or usage."
+        >{{ values.description }}</textarea>
+      </div>
+    </div>
+  </section>
+
+  <section class="form-section">
+    <div class="form-section-head">
+      <span class="section-number">02</span>
+      <div>
+        <h3>Pricing</h3>
+        <p>Used for inventory valuation and suggested selling values.</p>
+      </div>
+    </div>
+
+    <div class="form-grid two-col">
+      <div class="field">
+        <label for="costPrice">Cost price (₱) <span class="required">*</span></label>
+        <input
+          type="number"
+          id="costPrice"
+          name="costPrice"
+          value="{{ values.costPrice }}"
+          min="0"
+          step="0.01"
+          required
+        >
+        <span class="hint">What the station pays per unit.</span>
+      </div>
+
+      <div class="field">
+        <label for="sellingPrice">Selling price (₱) <span class="required">*</span></label>
+        <input
+          type="number"
+          id="sellingPrice"
+          name="sellingPrice"
+          value="{{ values.sellingPrice }}"
+          min="0"
+          step="0.01"
+          required
+        >
+        <span class="hint">Used for retail value estimates.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="form-section">
+    <div class="form-section-head">
+      <span class="section-number">03</span>
+      <div>
+        <h3>Stock controls</h3>
+        <p>{{#if isEdit}}Balances are protected and only change through the stock ledger.{{else}}Set the reorder warning and optional opening balance.{{/if}}</p>
+      </div>
+    </div>
+
+    <div class="form-grid two-col">
+      <div class="field">
+        <label for="reorderLevel">Reorder level <span class="required">*</span></label>
+        <input
+          type="number"
+          id="reorderLevel"
+          name="reorderLevel"
+          value="{{ values.reorderLevel }}"
+          min="0"
+          step="1"
+          required
+        >
+        <span class="hint">The dashboard warns when stock reaches this quantity.</span>
+      </div>
+
+      {{#if isEdit}}
+        <div class="balance-callout">
+          <span class="stat-label">Current balance</span>
+          <strong>{{ number product.quantity }} <small>{{ product.unit }}</small></strong>
+          <div class="inline-actions">
+            <a href="/stock/in?productId={{ product.id }}" class="text-link">Stock in</a>
+            <a href="/stock/out?productId={{ product.id }}" class="text-link">Stock out</a>
+            <a href="/stock/adjust?productId={{ product.id }}" class="text-link">Adjust</a>
+          </div>
+        </div>
+      {{else}}
+        <div class="field">
+          <label for="openingQuantity">Opening stock</label>
+          <input
+            type="number"
+            id="openingQuantity"
+            name="openingQuantity"
+            value="{{ values.openingQuantity }}"
+            min="0"
+            step="1"
+          >
+          <span class="hint">Optional. Recorded as an opening stock-in movement.</span>
+        </div>
+
+        <div class="field">
+          <label for="openingUnitCost">Opening unit cost (₱)</label>
+          <input
+            type="number"
+            id="openingUnitCost"
+            name="openingUnitCost"
+            value="{{ values.openingUnitCost }}"
+            min="0"
+            step="0.01"
+            placeholder="Defaults to cost price"
+          >
+          <span class="hint">Only used when opening stock is greater than zero.</span>
+        </div>
+      {{/if}}
+    </div>
+  </section>
+
+  <div class="form-actions">
+    <a href="{{#if isEdit}}/products/{{ product.id }}{{else}}/products{{/if}}" class="btn btn-ghost">Cancel</a>
+    <button type="submit" class="btn btn-primary">
+      <svg class="icon" aria-hidden="true"><use href="#i-check-circle"></use></svg>
+      {{#if isEdit}}Save changes{{else}}Create product{{/if}}
+    </button>
+  </div>
+</form>
+
+{{> shell-end}}

@@ -1,0 +1,101 @@
+{{> head}}
+<body class="login-body">
+  {{> svg-sprite}}
+  <div class="login-shell">
+    <section class="login-brand">
+      <div class="login-brand-top">
+        <span class="logo-badge">
+          <svg class="icon" aria-hidden="true"><use href="#i-drop"></use></svg>
+        </span>
+        <div>
+          <strong>AquaPiol</strong>
+          <small>Water Refilling Station</small>
+        </div>
+      </div>
+
+      <div class="login-brand-copy">
+        <span class="pill pill-light">Station inventory</span>
+        <h1>Keep every bottle, cap and filter accounted for.</h1>
+        <p>
+          One clear workspace for stock levels, supplier deliveries, daily usage
+          and the reports that keep the station running smoothly.
+        </p>
+
+        <ul class="login-benefits">
+          <li><span class="benefit-dot"></span> Live stock balances and low-stock alerts</li>
+          <li><span class="benefit-dot"></span> Audited stock in, stock out and adjustments</li>
+          <li><span class="benefit-dot"></span> Supplier records and inventory valuation</li>
+        </ul>
+      </div>
+
+      <div class="login-brand-foot">
+        <span>Bongabong, Oriental Mindoro</span>
+      </div>
+    </section>
+
+    <section class="login-panel">
+      <div class="login-card">
+        <div class="login-mobile-brand">
+          <span class="logo-badge">
+            <svg class="icon" aria-hidden="true"><use href="#i-drop"></use></svg>
+          </span>
+          <strong>AquaPiol</strong>
+        </div>
+
+        <span class="eyebrow">Welcome back</span>
+        <h2>Sign in to your station</h2>
+        <p class="login-subtitle">Use your administrator or staff account to continue.</p>
+
+        {{> flash}}
+
+        {{#if errors.length}}
+          <div class="alert alert-error" role="alert">
+            <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+            <div>
+              {{#each errors}}<p>{{ this }}</p>{{/each}}
+            </div>
+          </div>
+        {{/if}}
+
+        <form action="/login" method="POST" class="login-form">
+          {{> csrf}}
+          <div class="field">
+            <label for="email">Email address</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value="{{ email }}"
+              autocomplete="username"
+              placeholder="you@aquapiol.local"
+              required
+              autofocus
+            >
+          </div>
+
+          <div class="field">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              autocomplete="current-password"
+              placeholder="Enter your password"
+              required
+            >
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">
+            Sign in
+            <svg class="icon" aria-hidden="true"><use href="#i-arrow-up"></use></svg>
+          </button>
+        </form>
+      </div>
+
+      <p class="login-foot">
+        AquaPiol Inventory Management System
+      </p>
+    </section>
+  </div>
+</body>
+</html>

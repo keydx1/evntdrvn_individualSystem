@@ -1,0 +1,19 @@
+{{> head}}
+<body class="error-body">
+  <div class="error-card">
+    <span class="error-mark">{{ status }}</span>
+    <span class="eyebrow">AquaPiol inventory</span>
+    <h1>{{ title }}</h1>
+    <p>{{ message }}</p>
+    <div class="error-actions">
+      {{#if currentUser}}
+        <a href="/" class="btn btn-primary">Back to dashboard</a>
+      {{else}}
+        <a href="/login" class="btn btn-primary">Go to sign in</a>
+      {{/if}}
+      <a href="javascript:history.back()" class="btn btn-ghost">Go back</a>
+    </div>
+    <p class="error-foot">If this keeps happening, contact the station administrator.</p>
+  </div>
+</body>
+</html>

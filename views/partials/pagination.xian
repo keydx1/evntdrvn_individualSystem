@@ -1,0 +1,36 @@
+{{#if pagination.totalPages}}
+  <div class="table-footer">
+    <p class="table-count">
+      {{#if (eq pagination.total 0)}}
+        No results
+      {{else}}
+        Showing <strong>{{ pagination.firstItem }}–{{ pagination.lastItem }}</strong> of
+        <strong>{{ pagination.total }}</strong>
+      {{/if}}
+    </p>
+
+    {{#if (gt pagination.totalPages 1)}}
+      <nav class="pagination" aria-label="Pagination">
+        {{#if pagination.hasPrev}}
+          <a class="page-btn" href="{{ pagination.prevUrl }}" aria-label="Previous page">Prev</a>
+        {{else}}
+          <span class="page-btn disabled">Prev</span>
+        {{/if}}
+
+        {{#each pagination.pages}}
+          {{#if this.ellipsis}}
+            <span class="page-ellipsis">…</span>
+          {{else}}
+            <a class="page-btn {{#if this.active}}active{{/if}}" href="{{ this.url }}">{{ this.number }}</a>
+          {{/if}}
+        {{/each}}
+
+        {{#if pagination.hasNext}}
+          <a class="page-btn" href="{{ pagination.nextUrl }}" aria-label="Next page">Next</a>
+        {{else}}
+          <span class="page-btn disabled">Next</span>
+        {{/if}}
+      </nav>
+    {{/if}}
+  </div>
+{{/if}}

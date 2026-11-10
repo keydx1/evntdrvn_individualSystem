@@ -1,0 +1,141 @@
+{{> shell-start}}
+
+<section class="page-intro">
+  <div>
+    <span class="eyebrow">Stock catalogue</span>
+    <h2>Every item the station carries</h2>
+    <p>Track bottles, caps, labels, filters, cleaning supplies and office consumables in one place.</p>
+  </div>
+  {{#if (can "products.manage")}}
+  <a href="/products/new" class="btn btn-primary">
+    <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>
+    Add product
+  </a>
+  {{/if}}
+</section>
+
+<form class="filter-bar" method="GET" action="/products">
+  <div class="field search-field">
+    <label for="search" class="sr-only">Search products</label>
+    <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
+    <input
+      type="search"
+      id="search"
+      name="search"
+      value="{{ filters.search }}"
+      placeholder="Search by name, SKU or location…"
+    >
+  </div>
+
+  <div class="field">
+    <label for="category" class="sr-only">Category</label>
+    <select id="category" name="category">
+      <option value="">All categories</option>
+      {{#each categories}}
+        <option value="{{ id }}" {{selected ../filters.category id}}>{{ name }}</option>
+      {{/each}}
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="status" class="sr-only">Stock status</label>
+    <select id="status" name="status">
+      <option value="" {{selected filters.status ""}}>All active stock</option>
+      <option value="low" {{selected filters.status "low"}}>Low stock</option>
+      <option value="out" {{selected filters.status "out"}}>Out of stock</option>
+      <option value="archived" {{selected filters.status "archived"}}>Archived products</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="/products" class="btn btn-ghost">Reset</a>
+</form>
+
+<section class="panel panel-flush">
+  <div class="panel-head panel-head-inside">
+    <div>
+      <h3>{{ number resultCount }} product{{#if (ne resultCount 1)}}s{{/if}}</h3>
+      <p class="panel-subtitle">Balances update automatically with every stock movement.</p>
+    </div>
+    <div class="legend">
+      <span class="legend-item"><i class="dot success"></i> In stock</span>
+      <span class="legend-item"><i class="dot warning"></i> Low</span>
+      <span class="legend-item"><i class="dot danger"></i> Out</span>
+    </div>
+  </div>
+
+  {{#if products.length}}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Category</th>
+            <th class="text-right">On hand</th>
+            <th class="text-right">Reorder</th>
+            <th class="text-right">Stock value</th>
+            <th>Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each products}}
+            <tr class="{{#unless isActive}}row-muted{{/unless}}">
+              <td>
+                <a class="table-title" href="/products/{{ id }}">{{ name }}</a>
+                <span class="table-subtitle">{{ sku }}{{#if location}} · {{ location }}{{/if}}</span>
+              </td>
+              <td>
+                <span class="category-chip">{{ category.name }}</span>
+              </td>
+              <td class="text-right nowrap">
+                <strong class="stock-number">{{ number quantity }}</strong>
+                <span class="unit-label">{{ unit }}</span>
+              </td>
+              <td class="text-right nowrap muted">{{ number reorderLevel }}</td>
+              <td class="text-right nowrap">{{ money stockValue }}</td>
+              <td>
+                <span class="badge badge-{{ status.className }}">{{ status.label }}</span>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <a class="icon-btn" href="/products/{{ id }}" title="View {{ name }}">
+                    <svg class="icon" aria-hidden="true"><use href="#i-eye"></use></svg>
+                  </a>
+                  {{#if (can "products.manage")}}
+                  <a class="icon-btn" href="/products/{{ id }}/edit" title="Edit {{ name }}">
+                    <svg class="icon" aria-hidden="true"><use href="#i-edit"></use></svg>
+                  </a>
+                  {{/if}}
+                  {{#if isActive}}
+                    <a class="icon-btn" href="/stock/in?productId={{ id }}" title="Receive stock">
+                      <svg class="icon" aria-hidden="true"><use href="#i-arrow-down"></use></svg>
+                    </a>
+                  {{/if}}
+                </div>
+              </td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+
+    {{> pagination}}
+  {{else}}
+    <div class="empty-state large">
+      <span class="empty-icon">
+        <svg class="icon" aria-hidden="true"><use href="#i-box"></use></svg>
+      </span>
+      <h4>No products match this view</h4>
+      <p>Try a different search or filter, or add a new product to the catalogue.</p>
+      <div class="empty-actions">
+        <a href="/products" class="btn btn-secondary">Clear filters</a>
+        {{#if (can "products.manage")}}
+        <a href="/products/new" class="btn btn-primary">Add product</a>
+        {{/if}}
+      </div>
+    </div>
+  {{/if}}
+</section>
+
+{{> shell-end}}

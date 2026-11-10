@@ -1,0 +1,8 @@
+{{> head}}
+<body class="app-body">
+  <div class="app-shell">
+    {{> sidebar}}
+    <div class="app-main">
+      {{> topbar}}
+      <main class="content">
+        {{> flash}}

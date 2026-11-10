@@ -1,0 +1,10 @@
+      </main>
+      <footer class="app-footer">
+        <span>AquaPiol Water Refilling Station</span>
+        <span>Inventory Management System · XianFire Framework</span>
+      </footer>
+    </div>
+  </div>
+  <script src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+{{> shell-start}}
+
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <a href="/stock">Stock movements</a>
+  <span class="crumb-sep">/</span>
+  <span>{{ meta.title }}</span>
+</nav>
+
+<section class="page-intro compact">
+  <div>
+    <span class="eyebrow">Stock ledger</span>
+    <h2>{{ meta.title }}</h2>
+    <p>{{ meta.description }}</p>
+  </div>
+</section>
+
+{{#unless products.length}}
+  <div class="alert alert-warning">
+    <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+    <div>
+      <p>There are no active products to move.{{#if (can "products.manage")}} <a href="/products/new">Add a product first</a>.{{/if}}</p>
+    </div>
+  </div>
+{{/unless}}
+
+<div class="form-layout">
+  <form class="form-card" method="POST" action="{{ postAction }}">
+    {{> csrf}}
+    {{> form-errors}}
+
+    <section class="form-section">
+      <div class="form-section-head">
+        <span class="section-number">01</span>
+        <div>
+          <h3>Choose the product</h3>
+          <p>The current balance is shown so you can check the change before saving.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field field-full">
+          <label for="productId">Product <span class="required">*</span></label>
+          <select id="productId" name="productId" required data-stock-select>
+            <option value="">Select a product</option>
+            {{#each products}}
+              <option
+                value="{{ id }}"
+                data-stock="{{ quantity }}"
+                data-unit="{{ unit }}"
+                data-reorder="{{ reorderLevel }}"
+                {{selected ../values.productId id}}
+              >{{ name }} — {{ number quantity }} {{ unit }} ({{ sku }})</option>
+            {{/each}}
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="form-section">
+      <div class="form-section-head">
+        <span class="section-number">02</span>
+        <div>
+          <h3>{{#if (eq mode 'adjustment')}}Physical count{{else}}Movement details{{/if}}</h3>
+          <p>
+            {{#if (eq mode 'in')}}Record what was received and from whom.
+            {{else if (eq mode 'out')}}Record what left the station and why.
+            {{else}}Enter the actual quantity on the shelf. The difference becomes an audited adjustment.{{/if}}
+          </p>
+        </div>
+      </div>
+
+      <div class="form-grid two-col">
+        {{#if (eq mode 'adjustment')}}
+          <div class="field">
+            <label for="newQuantity">Counted quantity <span class="required">*</span></label>
+            <input
+              type="number"
+              id="newQuantity"
+              name="newQuantity"
+              value="{{ values.newQuantity }}"
+              min="0"
+              step="1"
+              required
+            >
+            <span class="hint">The quantity you actually counted, not the difference.</span>
+          </div>
+        {{else}}
+          <div class="field">
+            <label for="quantity">{{#if (eq mode 'in')}}Quantity received{{else}}Quantity released{{/if}} <span class="required">*</span></label>
+            <input
+              type="number"
+              id="quantity"
+              name="quantity"
+              value="{{ values.quantity }}"
+              min="1"
+              step="1"
+              required
+              data-quantity-input
+            >
+            <span class="hint" data-quantity-hint>
+              {{#if (eq mode 'in')}}Positive whole units added to stock.{{else}}Cannot exceed the current balance.{{/if}}
+            </span>
+          </div>
+        {{/if}}
+
+        {{#if (eq mode 'in')}}
+          <div class="field">
+            <label for="unitCost">Unit cost (₱)</label>
+            <input
+              type="number"
+              id="unitCost"
+              name="unitCost"
+              value="{{ values.unitCost }}"
+              min="0"
+              step="0.01"
+              placeholder="Leave blank to keep current cost"
+            >
+            <span class="hint">Updating this also updates the product's cost price.</span>
+          </div>
+
+          <div class="field">
+            <label for="supplierId">Supplier</label>
+            <select id="supplierId" name="supplierId">
+              <option value="">Not specified</option>
+              {{#each suppliers}}
+                <option value="{{ id }}" {{selected ../values.supplierId id}}>{{ name }}</option>
+              {{/each}}
+            </select>
+          </div>
+        {{/if}}
+
+        <div class="field">
+          <label for="reference">Reference number</label>
+          <input
+            type="text"
+            id="reference"
+            name="reference"
+            value="{{ values.reference }}"
+            maxlength="60"
+            placeholder="Auto-generated if blank"
+          >
+          <span class="hint">Delivery receipt, requisition or batch number.</span>
+        </div>
+
+        <div class="field {{#if (eq mode 'adjustment')}}field-full{{/if}}">
+          <label for="notes">
+            {{#if (eq mode 'adjustment')}}Reason for adjustment <span class="required">*</span>{{else}}Notes{{/if}}
+          </label>
+          <textarea
+            id="notes"
+            name="notes"
+            rows="3"
+            maxlength="500"
+            placeholder="{{#if (eq mode 'adjustment')}}e.g. Physical count after weekly stocktake{{else}}Optional context for this movement{{/if}}"
+            {{#if (eq mode 'adjustment')}}required{{/if}}
+          >{{ values.notes }}</textarea>
+        </div>
+      </div>
+    </section>
+
+    <div class="form-actions">
+      <a href="/stock" class="btn btn-ghost">Cancel</a>
+      <button type="submit" class="btn btn-primary" {{#unless products.length}}disabled{{/unless}}>
+        <svg class="icon" aria-hidden="true"><use href="#i-check-circle"></use></svg>
+        {{ meta.action }}
+      </button>
+    </div>
+  </form>
+
+  <aside class="side-stack">
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <span class="eyebrow">Selected product</span>
+          <h3>Current balance</h3>
+        </div>
+      </div>
+
+      <div class="balance-preview" data-balance-preview>
+        <span class="balance-label">On hand</span>
+        <strong data-balance-value>—</strong>
+        <span class="balance-unit" data-balance-unit>Select a product</span>
+        <p class="balance-note" data-balance-note>Choose a product to see its reorder point.</p>
+      </div>
+
+      <div class="preview-row">
+        <span>After this movement</span>
+        <strong data-balance-after>—</strong>
+      </div>
+    </section>
+
+    <section class="panel note-panel">
+      <span class="quick-icon info"><svg class="icon" aria-hidden="true"><use href="#i-info"></use></svg></span>
+      <h3>How this is recorded</h3>
+      <p>
+        Saving creates an immutable ledger entry with the previous balance, new balance,
+        reference, timestamp and your user account. The product balance is updated in the
+        same database transaction.
+      </p>
+      <ul class="check-list">
+        <li>No negative stock is allowed on release.</li>
+        <li>Adjustments require a reason.</li>
+        <li>Archived products are locked from new movements.</li>
+      </ul>
+    </section>
+  </aside>
+</div>
+
+{{> shell-end}}

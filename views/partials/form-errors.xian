@@ -1,0 +1,11 @@
+{{#if errors.length}}
+  <div class="alert alert-error" role="alert">
+    <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+    <div>
+      <strong>Please check the following:</strong>
+      <ul class="error-list">
+        {{#each errors}}<li>{{ this }}</li>{{/each}}
+      </ul>
+    </div>
+  </div>
+{{/if}}

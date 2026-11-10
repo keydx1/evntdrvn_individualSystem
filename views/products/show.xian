@@ -1,0 +1,239 @@
+{{> shell-start}}
+
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <a href="/products">Products</a>
+  <span class="crumb-sep">/</span>
+  <span>{{ product.name }}</span>
+</nav>
+
+<section class="detail-hero">
+  <div class="detail-hero-main">
+    <div class="detail-badges">
+      <span class="badge badge-{{ status.className }}">{{ status.label }}</span>
+      {{#unless product.isActive}}<span class="badge badge-muted">Archived</span>{{/unless}}
+      <span class="category-chip">{{ product.category.name }}</span>
+    </div>
+    <h2>{{ product.name }}</h2>
+    <p class="detail-subtitle">
+      <code>{{ product.sku }}</code>
+      {{#if product.supplier}} · Supplied by {{ product.supplier.name }}{{/if}}
+      {{#if product.location}} · {{ product.location }}{{/if}}
+    </p>
+  </div>
+
+  <div class="detail-balance">
+    <span>On hand</span>
+    <strong>{{ number product.quantity }}</strong>
+    <small>{{ product.unit }} · reorder at {{ number product.reorderLevel }}</small>
+  </div>
+
+  <div class="detail-actions">
+    {{#if product.isActive}}
+      <a href="/stock/in?productId={{ product.id }}" class="btn btn-primary">
+        <svg class="icon" aria-hidden="true"><use href="#i-arrow-down"></use></svg>
+        Stock in
+      </a>
+      <a href="/stock/out?productId={{ product.id }}" class="btn btn-secondary">
+        <svg class="icon" aria-hidden="true"><use href="#i-arrow-up"></use></svg>
+        Stock out
+      </a>
+      <a href="/stock/adjust?productId={{ product.id }}" class="btn btn-secondary">Adjust</a>
+      {{#if (can "products.manage")}}
+        <a href="/products/{{ product.id }}/edit" class="btn btn-ghost">
+          <svg class="icon" aria-hidden="true"><use href="#i-edit"></use></svg>
+          Edit
+        </a>
+      {{/if}}
+    {{/if}}
+
+    {{#if (can "products.manage")}}
+      <form action="/products/{{ product.id }}/archive" method="POST" data-confirm="{{#if product.isActive}}Archive {{ product.name }}? Its stock history will be kept.{{else}}Restore {{ product.name }} to active inventory?{{/if}}">
+        {{> csrf}}
+        <button type="submit" class="btn btn-ghost">
+          <svg class="icon" aria-hidden="true"><use href="#i-archive"></use></svg>
+          {{#if product.isActive}}Archive{{else}}Restore{{/if}}
+        </button>
+      </form>
+      <form action="/products/{{ product.id }}/delete" method="POST" data-confirm="Delete {{ product.name }} permanently? Products with stock history must be archived instead.">
+        {{> csrf}}
+        <button type="submit" class="btn btn-ghost">
+          <svg class="icon" aria-hidden="true"><use href="#i-trash"></use></svg>
+          Delete
+        </button>
+      </form>
+    {{/if}}
+  </div>
+</section>
+
+{{#unless product.isActive}}
+  <div class="alert alert-warning">
+    <svg class="icon" aria-hidden="true"><use href="#i-info"></use></svg>
+    <div>
+      <p>This product is archived. It no longer appears in active inventory or the stock-in/out pickers, but its ledger history is preserved.</p>
+    </div>
+  </div>
+{{/unless}}
+
+{{#if (lte product.quantity product.reorderLevel)}}
+  {{#if product.isActive}}
+    <div class="alert alert-warning">
+      <svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg>
+      <div>
+        <p>
+          {{#if (lte product.quantity 0)}}
+            This product is out of stock. Record a delivery to replenish it.
+          {{else}}
+            Stock is at or below the reorder level of {{ number product.reorderLevel }} {{ product.unit }}.
+          {{/if}}
+        </p>
+      </div>
+    </div>
+  {{/if}}
+{{/if}}
+
+<section class="stat-grid stat-grid-four">
+  <article class="stat-card">
+    <div class="stat-icon blue"><svg class="icon" aria-hidden="true"><use href="#i-box"></use></svg></div>
+    <div class="stat-copy">
+      <span class="stat-label">Stock value</span>
+      <strong class="stat-value">{{ money stockValue }}</strong>
+      <span class="stat-meta">At cost price</span>
+    </div>
+  </article>
+  <article class="stat-card">
+    <div class="stat-icon aqua"><svg class="icon" aria-hidden="true"><use href="#i-chart"></use></svg></div>
+    <div class="stat-copy">
+      <span class="stat-label">Retail value</span>
+      <strong class="stat-value">{{ money retailValue }}</strong>
+      <span class="stat-meta">At selling price</span>
+    </div>
+  </article>
+  <article class="stat-card">
+    <div class="stat-icon amber"><svg class="icon" aria-hidden="true"><use href="#i-alert"></use></svg></div>
+    <div class="stat-copy">
+      <span class="stat-label">Reorder level</span>
+      <strong class="stat-value">{{ number product.reorderLevel }}</strong>
+      <span class="stat-meta">{{ product.unit }} remaining triggers a warning</span>
+    </div>
+  </article>
+  <article class="stat-card">
+    <div class="stat-icon green"><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg></div>
+    <div class="stat-copy">
+      <span class="stat-label">Last updated</span>
+      <strong class="stat-value stat-value-small">{{ formatDate product.updatedAt }}</strong>
+      <span class="stat-meta">Catalogue record</span>
+    </div>
+  </article>
+</section>
+
+<div class="detail-grid">
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <span class="eyebrow">Record</span>
+        <h3>Product information</h3>
+      </div>
+    </div>
+
+    <dl class="detail-list">
+      <div><dt>SKU</dt><dd><code>{{ product.sku }}</code></dd></div>
+      <div><dt>Category</dt><dd>{{ product.category.name }}</dd></div>
+      <div><dt>Preferred supplier</dt><dd>{{#if product.supplier}}{{ product.supplier.name }}{{else}}<span class="muted">Not set</span>{{/if}}</dd></div>
+      <div><dt>Unit of measure</dt><dd>{{ product.unit }}</dd></div>
+      <div><dt>Cost price</dt><dd>{{ money product.costPrice }}</dd></div>
+      <div><dt>Selling price</dt><dd>{{ money product.sellingPrice }}</dd></div>
+      <div><dt>Storage location</dt><dd>{{#if product.location}}{{ product.location }}{{else}}<span class="muted">Not set</span>{{/if}}</dd></div>
+      <div><dt>Created</dt><dd>{{ formatDate product.createdAt }}</dd></div>
+    </dl>
+
+    {{#if product.description}}
+      <div class="description-block">
+        <h4>Description</h4>
+        <p>{{ product.description }}</p>
+      </div>
+    {{/if}}
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <span class="eyebrow">Control</span>
+        <h3>Quick actions</h3>
+      </div>
+    </div>
+
+    <div class="quick-action-list">
+      <a href="/stock/in?productId={{ product.id }}" class="quick-action">
+        <span class="quick-icon success"><svg class="icon" aria-hidden="true"><use href="#i-arrow-down"></use></svg></span>
+        <span><strong>Receive stock</strong><small>Record a supplier delivery</small></span>
+      </a>
+      <a href="/stock/out?productId={{ product.id }}" class="quick-action">
+        <span class="quick-icon danger"><svg class="icon" aria-hidden="true"><use href="#i-arrow-up"></use></svg></span>
+        <span><strong>Release stock</strong><small>Record usage or delivery</small></span>
+      </a>
+      <a href="/stock/adjust?productId={{ product.id }}" class="quick-action">
+        <span class="quick-icon info"><svg class="icon" aria-hidden="true"><use href="#i-swap"></use></svg></span>
+        <span><strong>Adjust count</strong><small>Match a physical stock count</small></span>
+      </a>
+      <a href="/stock?productId={{ product.id }}" class="quick-action">
+        <span class="quick-icon blue"><svg class="icon" aria-hidden="true"><use href="#i-chart"></use></svg></span>
+        <span><strong>Full ledger</strong><small>Browse this product's history</small></span>
+      </a>
+    </div>
+  </section>
+</div>
+
+<section class="panel panel-flush">
+  <div class="panel-head panel-head-inside">
+    <div>
+      <span class="eyebrow">Audit trail</span>
+      <h3>Recent stock movements</h3>
+    </div>
+    <a href="/stock?productId={{ product.id }}" class="text-link">View all</a>
+  </div>
+
+  {{#if movements.length}}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th class="text-right">Change</th>
+            <th class="text-right">Balance</th>
+            <th>Reference</th>
+            <th>Recorded by</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each movements}}
+            <tr>
+              <td class="nowrap">{{ formatDateTime createdAt }}</td>
+              <td><span class="badge badge-{{ movementClass type }}">{{ movementLabel type }}</span></td>
+              <td class="text-right nowrap">
+                <strong class="signed {{ movementClass type }}">{{ signed quantity }}</strong>
+              </td>
+              <td class="text-right nowrap">
+                <span class="muted">{{ number previousStock }}</span>
+                <span class="arrow-sep">→</span>
+                <strong>{{ number newStock }}</strong>
+              </td>
+              <td><code class="small-code">{{#if reference}}{{ reference }}{{else}}—{{/if}}</code></td>
+              <td>{{ user.name }}</td>
+              <td class="notes-cell">{{#if notes}}{{ notes }}{{else}}<span class="muted">—</span>{{/if}}</td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  {{else}}
+    <div class="empty-state">
+      <span class="empty-icon"><svg class="icon" aria-hidden="true"><use href="#i-swap"></use></svg></span>
+      <h4>No stock movements yet</h4>
+      <p>Use “Stock in” to record the first delivery for this product.</p>
+    </div>
+  {{/if}}
+</section>
+
+{{> shell-end}}
