@@ -19,8 +19,9 @@ export const User = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: false,
     },
+    // Stores a role key from the `roles` table (see models/roleModel.js).
     role: {
-      type: DataTypes.ENUM("admin", "staff"),
+      type: DataTypes.STRING(32),
       allowNull: false,
       defaultValue: "staff",
     },

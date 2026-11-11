@@ -68,7 +68,21 @@ export const stockStatus = (product) => {
   return { label: "In stock", className: "success" };
 };
 
-export const userRoleLabel = (role) => (role === "admin" ? "Administrator" : "Staff");
+const ROLE_LABELS = {
+  admin: "Administrator",
+  manager: "Station manager",
+  staff: "Station staff",
+  viewer: "Read-only viewer",
+};
+
+export const userRoleLabel = (role) => {
+  const key = String(role || "");
+  if (ROLE_LABELS[key]) return ROLE_LABELS[key];
+  return key
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+    .trim();
+};
 
 export const movementLabel = (type) =>
   ({ in: "Stock in", out: "Stock out", adjustment: "Adjustment" })[type] || type;

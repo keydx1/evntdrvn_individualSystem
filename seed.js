@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import {
   sequelize,
   User,
+  Role,
   Category,
   Supplier,
   Product,
@@ -370,6 +371,32 @@ const seed = async () => {
           password: await bcrypt.hash(crypto.randomUUID(), 8),
           role: "staff",
         },
+        transaction,
+      });
+    }
+
+    const roleSeeds = [
+      ["admin", "Administrator", "Full access, including user and role administration.", [
+        "dashboard.view", "products.view", "products.manage", "categories.view", "categories.manage",
+        "suppliers.view", "suppliers.manage", "stock.view", "stock.record", "reports.view",
+        "reports.export", "users.manage", "roles.manage",
+      ]],
+      ["manager", "Station manager", "Runs inventory, pricing and reports but cannot manage accounts.", [
+        "dashboard.view", "products.view", "products.manage", "categories.view", "categories.manage",
+        "suppliers.view", "suppliers.manage", "stock.view", "stock.record", "reports.view", "reports.export",
+      ]],
+      ["staff", "Station staff", "Records stock movements and reads inventory and reports.", [
+        "dashboard.view", "products.view", "categories.view", "suppliers.view", "stock.view", "stock.record", "reports.view",
+      ]],
+      ["viewer", "Read-only viewer", "Can look at stock, catalogue and reports but cannot change anything.", [
+        "dashboard.view", "products.view", "categories.view", "suppliers.view", "stock.view", "reports.view",
+      ]],
+    ];
+
+    for (const [key, name, description, permissions] of roleSeeds) {
+      await Role.findOrCreate({
+        where: { key },
+        defaults: { key, name, description, permissions, isSystem: true },
         transaction,
       });
     }

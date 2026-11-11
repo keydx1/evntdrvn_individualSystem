@@ -286,6 +286,39 @@ paths:
                             unit_cost: { type: string }
                             value: { type: string }
                       total_value: { type: string }
+  /:
+    get:
+      summary: API index, conventions and per-system endpoint catalogue
+      security: []
+      responses:
+        "200":
+          description: Service catalogue
+  /me:
+    get:
+      summary: Resolve the presented token to a service, its scopes and actor account
+      responses:
+        "200":
+          description: Token identity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      service: { type: string, example: pos }
+                      scopes:
+                        type: array
+                        items: { type: string }
+                      actor:
+                        type: object
+                        properties:
+                          id: { type: integer }
+                          name: { type: string }
+                          email: { type: string }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 components:
   securitySchemes:
     serviceToken:

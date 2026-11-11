@@ -7,3 +7,5 @@ public/uploads/
 .DS_Store
 backups/*
 !backups/.gitkeep
+SHARED-DB-ACCESS.txt
+postman/generated/

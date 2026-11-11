@@ -4,12 +4,18 @@
   <div>
     <span class="eyebrow">Access control</span>
     <h2>User accounts</h2>
-    <p>Administrators manage the system; staff record stock movements and daily inventory work.</p>
+    <p>Every account signs in with one role, and each role decides which pages and actions it can use.</p>
   </div>
-  <a href="/users/new" class="btn btn-primary">
-    <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>
-    Add user
-  </a>
+  <div class="row-actions">
+    <a href="/roles" class="btn btn-ghost">
+      <svg class="icon" aria-hidden="true"><use href="#i-eye"></use></svg>
+      Roles
+    </a>
+    <a href="/users/new" class="btn btn-primary">
+      <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>
+      Add user
+    </a>
+  </div>
 </section>
 
 <section class="panel panel-flush">
@@ -46,11 +52,7 @@
                 </span>
               </td>
               <td>
-                {{#if (eq role 'admin')}}
-                  <span class="badge badge-info">Administrator</span>
-                {{else}}
-                  <span class="badge badge-muted">Staff</span>
-                {{/if}}
+                <span class="badge badge-{{ roleTone }}">{{ roleName }}</span>
               </td>
               <td>
                 {{#if isActive}}

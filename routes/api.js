@@ -3,6 +3,7 @@ import { apiAuth, requireScope } from "../middleware/apiAuth.js";
 import { apiRateLimit } from "../middleware/apiRateLimit.js";
 import { sendApiError } from "../utils/apiErrors.js";
 import { health } from "../controllers/api/healthController.js";
+import { apiDocs, apiIndex, apiMe, apiSpec } from "../controllers/api/docsController.js";
 import {
   getProductBySku,
   listCategories,
@@ -66,8 +67,16 @@ router.use(requestLog);
 // Public liveness probe so the other systems can check reachability.
 router.get("/health", health);
 
+// Public developer surface: catalogue, HTML guide and the OpenAPI contract.
+router.get("/", apiIndex);
+router.get("/docs", apiDocs);
+router.get("/openapi.yaml", apiSpec);
+
 router.use(apiAuth);
 router.use(apiRateLimit);
+
+// Handy for the five consumer systems: prove which token/scopes are in use.
+router.get("/me", apiMe);
 
 router.get("/products", requireScope("inventory:read"), listProducts);
 router.get("/products/:sku", requireScope("inventory:read"), getProductBySku);

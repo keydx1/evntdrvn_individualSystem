@@ -10,7 +10,7 @@
   <div>
     <span class="eyebrow">Access control</span>
     <h2>{{#if isEdit}}{{ account.name }}{{else}}Add a user account{{/if}}</h2>
-    <p>{{#if isEdit}}Update access, reset the password or deactivate the account.{{else}}Create an account for a station administrator or staff member.{{/if}}</p>
+    <p>{{#if isEdit}}Update the role, reset the password or deactivate the account.{{else}}Create an account and give it a role.{{/if}}</p>
   </div>
 </section>
 
@@ -58,10 +58,11 @@
       <div class="field">
         <label for="role">Role <span class="required">*</span></label>
         <select id="role" name="role" required>
-          <option value="staff" {{selected values.role "staff"}}>Staff — inventory operations</option>
-          <option value="admin" {{selected values.role "admin"}}>Administrator — full access</option>
+          {{#each roles}}
+            <option value="{{ key }}" {{selected ../values.role key}}>{{ name }}{{#if description}} — {{ description }}{{/if}}</option>
+          {{/each}}
         </select>
-        <span class="hint">Only administrators can manage users, archive products and delete categories or suppliers.</span>
+        <span class="hint">What this account can do comes from its role. Edit the permissions in <a href="/roles">Roles &amp; permissions</a>.</span>
       </div>
 
       <div class="field">

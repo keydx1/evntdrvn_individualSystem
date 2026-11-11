@@ -47,12 +47,20 @@
       <span>Reports</span>
     </a>
 
-    {{#if (can "users.manage")}}
+    {{#if (or canManageUsers canManageRoles)}}
       <p class="nav-label">Administration</p>
-      <a class="nav-link {{#if (eq active 'users')}}active{{/if}}" href="/users">
-        <svg class="icon" aria-hidden="true"><use href="#i-users"></use></svg>
-        <span>Users</span>
-      </a>
+      {{#if canManageUsers}}
+        <a class="nav-link {{#if (eq active 'users')}}active{{/if}}" href="/users">
+          <svg class="icon" aria-hidden="true"><use href="#i-users"></use></svg>
+          <span>Users</span>
+        </a>
+      {{/if}}
+      {{#if canManageRoles}}
+        <a class="nav-link {{#if (eq active 'roles')}}active{{/if}}" href="/roles">
+          <svg class="icon" aria-hidden="true"><use href="#i-eye"></use></svg>
+          <span>Roles &amp; permissions</span>
+        </a>
+      {{/if}}
     {{/if}}
   </nav>
 
@@ -62,7 +70,7 @@
         <span class="avatar">{{ initials currentUser.name }}</span>
         <span class="sidebar-user-copy">
           <strong>{{ currentUser.name }}</strong>
-          <small>{{ roleLabel currentUser.role }}</small>
+          <small>{{#if currentRoleName}}{{ currentRoleName }}{{else}}{{ roleLabel currentUser.role }}{{/if}}</small>
         </span>
       </div>
     {{/if}}

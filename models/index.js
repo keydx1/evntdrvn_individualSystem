@@ -4,6 +4,7 @@ import { Supplier } from "./supplierModel.js";
 import { Product } from "./productModel.js";
 import { StockMovement } from "./stockMovementModel.js";
 import { User } from "./userModel.js";
+import { Role } from "./roleModel.js";
 import { ApiIdempotency } from "./apiIdempotency.js";
 
 Category.hasMany(Product, {
@@ -41,4 +42,4 @@ Supplier.hasMany(StockMovement, {
 });
 StockMovement.belongsTo(Supplier, { as: "supplier", foreignKey: "supplierId" });
 
-export { sequelize, Category, Supplier, Product, StockMovement, User, ApiIdempotency };
+export { sequelize, Category, Supplier, Product, StockMovement, User, Role, ApiIdempotency };

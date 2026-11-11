@@ -15,6 +15,7 @@
     "seed": "node seed.js",
     "setup": "node migrate.js && node seed.js",
     "migrate:sql": "node scripts/migrate-sql.js",
+    "postman:env": "node scripts/postman-env.mjs",
     "backup": "bash scripts/backup.sh",
     "employee:map": "node scripts/map-employee.js",
     "create:model": "node create.js model",

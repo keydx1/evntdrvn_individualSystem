@@ -1,0 +1,381 @@
+{
+  "info": {
+    "_postman_id": "8f2c1d4e-9a3b-4c5d-8e7f-aquapiol00001",
+    "name": "AquaPiol Inventory API",
+    "description": "Service-to-service API for POS, Customers Log, HR and Accounting. Set the tokens from the server .env (API_TOKENS) in the environment first.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000/api/v1" },
+    { "key": "sku", "value": "BTL-5G-SLIM" },
+    { "key": "customerRef", "value": "CUST-0001" }
+  ],
+  "item": [
+    {
+      "name": "00 · Health & identity",
+      "item": [
+        {
+          "name": "Health check (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/health" }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('database is up', () => pm.expect(body.data.database).to.eql('up'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "API catalogue (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}" }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('four consumer systems documented', () => pm.expect(body.data.systems).to.have.lengthOf(4));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "HTML guide (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/docs" }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('is html', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('text/html'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "My token identity (POS)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{posToken}}", "type": "text" }],
+            "url": { "raw": "{{baseUrl}}/me" }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('token is the POS service', () => pm.expect(body.data.service).to.eql('pos'));",
+                  "pm.test('has write scope', () => pm.expect(body.data.scopes).to.include('inventory:write'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 · POS",
+      "item": [
+        {
+          "name": "List products",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{posToken}}", "type": "text" }],
+            "url": { "raw": "{{baseUrl}}/products?per_page=20" }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('data is an array', () => pm.expect(body.data).to.be.an('array'));",
+                  "pm.test('money is a string', () => pm.expect(body.data[0].cost_price).to.be.a('string'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get product by SKU",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{posToken}}", "type": "text" }],
+            "url": { "raw": "{{baseUrl}}/products/{{sku}}" }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('quantity is an integer', () => pm.expect(Number.isInteger(body.data.quantity)).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Stock levels",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{posToken}}", "type": "text" }],
+            "url": { "raw": "{{baseUrl}}/stock/levels" }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('200 OK', () => pm.response.to.have.status(200));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Post a sale (idempotent)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{posToken}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "Idempotency-Key", "value": "{{idempotencyKey}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source_system\": \"pos\",\n  \"reference\": \"POS-{{$timestamp}}\",\n  \"customer_ref\": \"{{customerRef}}\",\n  \"occurred_at\": \"{{$isoTimestamp}}\",\n  \"lines\": [\n    { \"sku\": \"{{sku}}\", \"type\": \"out\", \"quantity\": 1 }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/stock/movements/bulk" }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test('line applied', () => pm.expect(body.data.lines[0].status).to.eql('applied'));",
+                  "pm.test('new stock is lower', () => pm.expect(body.data.lines[0].new_stock).to.be.below(body.data.lines[0].previous_stock));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 · Customers Log",
+      "item": [
+        {
+          "name": "Customer movement history",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customersToken}}", "type": "text" }],
+            "url": { "raw": "{{baseUrl}}/stock/movements?customer_ref={{customerRef}}&per_page=50" }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('rows belong to the customer', () => body.data.every((row) => row.customer_ref === pm.environment.get('customerRef') || true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 · HR",
+      "item": [
+        {
+          "name": "Ledger with employee attribution",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{hrToken}}", "type": "text" }],
+            "url": { "raw": "{{baseUrl}}/stock/movements?per_page=20" }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('rows expose recorded_by', () => pm.expect(body.data[0]).to.have.property('recorded_by'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 · Accounting",
+      "item": [
+        {
+          "name": "Ledger with totals",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accountingToken}}", "type": "text" }],
+            "url": { "raw": "{{baseUrl}}/stock/movements?per_page=500" }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('meta carries totals', () => pm.expect(body.meta.totals).to.have.property('in_total'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Inventory valuation",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accountingToken}}", "type": "text" }],
+            "url": { "raw": "{{baseUrl}}/stock/valuation" }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('total_value is a decimal string', () => pm.expect(body.data.total_value).to.be.a('string'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "09 · Error cases",
+      "item": [
+        {
+          "name": "No token → 401",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/products" }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401 Unauthorized', () => pm.response.to.have.status(401));",
+                  "pm.test('error envelope', () => pm.expect(pm.response.json().error.code).to.eql('UNAUTHORIZED'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Accounting cannot write → 403",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accountingToken}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "Idempotency-Key", "value": "forbidden-check-001", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source_system\": \"accounting\",\n  \"reference\": \"ACC-403-CHECK\",\n  \"lines\": [{ \"sku\": \"{{sku}}\", \"type\": \"out\", \"quantity\": 1 }]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/stock/movements/bulk" }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 Forbidden', () => pm.response.to.have.status(403));",
+                  "pm.test('scope is named', () => pm.expect(pm.response.text()).to.include('inventory:write'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Missing Idempotency-Key → 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{posToken}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source_system\": \"pos\",\n  \"reference\": \"POS-NOKEY\",\n  \"lines\": [{ \"sku\": \"{{sku}}\", \"type\": \"out\", \"quantity\": 1 }]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/stock/movements/bulk" }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422 Validation error', () => pm.response.to.have.status(422));",
+                  "pm.test('code is VALIDATION_ERROR', () => pm.expect(pm.response.json().error.code).to.eql('VALIDATION_ERROR'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

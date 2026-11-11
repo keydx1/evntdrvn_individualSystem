@@ -1,0 +1,85 @@
+{{> shell-start}}
+
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <a href="/roles">Roles &amp; permissions</a>
+  <span class="crumb-sep">/</span>
+  <span>{{#if isEdit}}{{ values.name }}{{else}}New role{{/if}}</span>
+</nav>
+
+<section class="page-intro compact">
+  <div>
+    <span class="eyebrow">Access control</span>
+    <h2>{{#if isEdit}}{{ values.name }}{{else}}Create a role{{/if}}</h2>
+    <p>{{#if isEdit}}Tick the permissions this role should hold. Accounts using it change as soon as you save.{{else}}Name the role, then choose what its accounts are allowed to do.{{/if}}</p>
+  </div>
+</section>
+
+<form class="form-card narrow" method="POST" action="{{#if isEdit}}/roles/{{ role.id }}{{else}}/roles{{/if}}">
+  {{> csrf}}
+  {{> form-errors}}
+
+  <section class="form-section">
+    <div class="form-section-head">
+      <span class="section-number">01</span>
+      <div>
+        <h3>Role details</h3>
+        <p>The key is what accounts store, so it cannot be changed after the role is created.</p>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="name">Role name <span class="required">*</span></label>
+        <input type="text" id="name" name="name" value="{{ values.name }}" maxlength="60" placeholder="e.g. Delivery dispatcher" required autofocus>
+      </div>
+
+      <div class="field">
+        <label for="key">Role key <span class="required">*</span></label>
+        <input type="text" id="key" name="key" value="{{ values.key }}" maxlength="32" placeholder="e.g. dispatcher" {{#if isEdit}}readonly{{else}}required{{/if}}>
+        <span class="hint">Lowercase letters, numbers, - or _.</span>
+      </div>
+
+      <div class="field field-full">
+        <label for="description">Description</label>
+        <input type="text" id="description" name="description" value="{{ values.description }}" maxlength="255" placeholder="What is this role responsible for?">
+      </div>
+    </div>
+  </section>
+
+  <section class="form-section">
+    <div class="form-section-head">
+      <span class="section-number">02</span>
+      <div>
+        <h3>Permissions</h3>
+        <p>{{ selectedCount }} of {{ totalPermissions }} selected{{#if isEdit}} &middot; {{ assignedUsers }} account(s) currently use this role{{/if}}</p>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      {{#each catalog}}
+        <div class="field field-full">
+          <h4>{{ group }}</h4>
+          {{#each items}}
+            <label class="checkbox-row">
+              <input type="checkbox" name="permissions" value="{{ key }}" {{#if checked}}checked{{/if}}>
+              <span>
+                <strong>{{ label }}</strong>
+                {{#if description}}<small>{{ description }}</small>{{/if}}
+              </span>
+            </label>
+          {{/each}}
+        </div>
+      {{/each}}
+    </div>
+  </section>
+
+  <div class="form-actions">
+    <a href="/roles" class="btn btn-ghost">Cancel</a>
+    <button type="submit" class="btn btn-primary">
+      <svg class="icon" aria-hidden="true"><use href="#i-check-circle"></use></svg>
+      {{#if isEdit}}Save role{{else}}Create role{{/if}}
+    </button>
+  </div>
+</form>
+
+{{> shell-end}}

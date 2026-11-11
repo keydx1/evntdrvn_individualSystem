@@ -45,6 +45,14 @@ import {
   userIndex,
   userUpdate,
 } from "../controllers/userController.js";
+import {
+  roleCreate,
+  roleCreatePage,
+  roleDelete,
+  roleEditPage,
+  roleIndex,
+  roleUpdate,
+} from "../controllers/roleController.js";
 import { requireAuth, requirePermission } from "../middleware/auth.js";
 import { loadStockAlerts } from "../middleware/alerts.js";
 
@@ -109,5 +117,13 @@ router.get("/users/new", requirePermission("users.manage"), userCreatePage);
 router.post("/users", requirePermission("users.manage"), userCreate);
 router.get("/users/:id/edit", requirePermission("users.manage"), userEditPage);
 router.post("/users/:id", requirePermission("users.manage"), userUpdate);
+
+// Roles & permissions
+router.get("/roles", requirePermission("roles.manage"), roleIndex);
+router.get("/roles/new", requirePermission("roles.manage"), roleCreatePage);
+router.post("/roles", requirePermission("roles.manage"), roleCreate);
+router.get("/roles/:id/edit", requirePermission("roles.manage"), roleEditPage);
+router.post("/roles/:id", requirePermission("roles.manage"), roleUpdate);
+router.post("/roles/:id/delete", requirePermission("roles.manage"), roleDelete);
 
 export default router;

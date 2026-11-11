@@ -48,10 +48,16 @@ If your credentials differ, copy `.env.example` to `.env` and edit it.
 cd aquapiol
 npm install
 npm run setup
+npm run migrate:sql
 ```
 
 `npm run setup` runs the migration (creates the database and tables) and seeds demo data.
 It is safe to run again: existing tables are verified and existing seed rows are skipped.
+
+`npm run migrate:sql` applies the SQL migrations in `migrations/` and **is required**: it creates
+the `roles` table used by RBAC (005) and the read-only reporting views (004), plus the API
+indexes. Without it the user pages fail and the shared views in `SHARED-DB-ACCESS.txt` will not exist.
+It is idempotent, so run it again after every pull that changes `migrations/`.
 
 ### 3. Run
 

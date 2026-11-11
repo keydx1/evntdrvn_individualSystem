@@ -1,0 +1,76 @@
+{{> shell-start}}
+
+<section class="page-intro">
+  <div>
+    <span class="eyebrow">Access control</span>
+    <h2>Roles &amp; permissions</h2>
+    <p>Each account signs in with one role. A role is a set of permissions, and every page and action is gated by them.</p>
+  </div>
+  <a href="/roles/new" class="btn btn-primary">
+    <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>
+    New role
+  </a>
+</section>
+
+<section class="panel panel-flush">
+  <div class="panel-head panel-head-inside">
+    <div>
+      <h3>{{ roles.length }} role{{#if (ne roles.length 1)}}s{{/if}}</h3>
+      <p class="panel-subtitle">Built-in roles can be re-scoped but not deleted. At least one role must keep user management.</p>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Role</th>
+          <th>Key</th>
+          <th>Permissions</th>
+          <th class="text-right">Accounts</th>
+          <th>Type</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each roles}}
+          <tr>
+            <td>
+              <strong>{{ name }}{{#if isOwnRole}} <span class="you-tag">Your role</span>{{/if}}</strong>
+              {{#if description}}<small>{{ description }}</small>{{/if}}
+            </td>
+            <td><code>{{ key }}</code></td>
+            <td>
+              <span class="badge badge-muted">{{ permissionCount }} / {{ ../permissionTotal }}</span>
+            </td>
+            <td class="text-right">{{ number userCount }}</td>
+            <td>
+              {{#if isSystem}}
+                <span class="badge badge-info">Built-in</span>
+              {{else}}
+                <span class="badge badge-success">Custom</span>
+              {{/if}}
+            </td>
+            <td>
+              <div class="row-actions">
+                <a class="icon-btn" href="/roles/{{ id }}/edit" data-role-key="{{ key }}" title="Edit {{ name }}">
+                  <svg class="icon" aria-hidden="true"><use href="#i-edit"></use></svg>
+                </a>
+                {{#unless isSystem}}
+                  <form action="/roles/{{ id }}/delete" method="POST" data-confirm="Delete the {{ name }} role?">
+                    {{> csrf}}
+                    <button type="submit" class="icon-btn" title="Delete {{ name }}">
+                      <svg class="icon" aria-hidden="true"><use href="#i-trash"></use></svg>
+                    </button>
+                  </form>
+                {{/unless}}
+              </div>
+            </td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{{> shell-end}}
